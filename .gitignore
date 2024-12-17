@@ -1,0 +1,38 @@
+# Rust 빌드 디렉터리
+/target/
+
+# Cargo.lock 파일 (라이브러리 프로젝트에서만 무시)
+# 라이브러리 프로젝트가 아닌 애플리케이션 프로젝트에서는 포함해야 함.
+# 참고: Cargo.lock은 종속성 버전을 고정하므로 애플리케이션에서는 추적 필요.
+# /Cargo.lock
+
+# 빌드 스크립트 생성 파일
+**/*.rs.bk
+
+# IDE와 편집기 관련 파일
+.idea/
+.vscode/
+*.iml
+
+# OS 생성 파일
+.DS_Store
+Thumbs.db
+
+# 로그 파일
+*.log
+
+# 환경 변수 파일
+.env
+.env.*
+
+# 테스트 결과 및 생성된 파일
+/tests/output/
+
+# 바이너리 파일
+**/*.exe
+**/*.dll
+**/*.so
+**/*.dylib
+
+# 특정 툴에 의해 생성된 파일
+/.gdb_history
