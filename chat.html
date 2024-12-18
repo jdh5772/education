@@ -7,10 +7,10 @@
     <body>
         <h1>해맞이 아동센터</h1>
 
-        <input id="username" style="display:block; width:800px;height:35px; box-sizing: border-box;font-size: 20px;" type="text" placeholder="username">
-        <button id="join-chat" type="button">Join Chat</button>
-        <textarea id="chat" style="display:block; width:800px; height:300px; box-sizing: border-box" cols="30" rows="10" readonly></textarea>
-        <input id="input" style="display:block; width:800px;height:100px; box-sizing: border-box;font-size: 25px;" type="text" placeholder="chat">
+        <input id="username" style="display:block; width:800px;height:70px; box-sizing: border-box;font-size: 20px;" type="text" placeholder="닉네임">
+        <button id="join-chat" style="width: 800px;height: 70px;font-size: 50px;" type="button">채팅방 입장하기</button>
+        <textarea id="chat" style="display:block; width:800px; height:300px; box-sizing: border-box;font-size: 18px;" cols="30" rows="10" readonly></textarea>
+        <input id="input" style="display:block; width:800px;height:100px; box-sizing: border-box;font-size: 25px;" type="text" placeholder="채팅하기">
 
         <script>
             const username = document.querySelector("#username");
@@ -45,6 +45,9 @@
         
                 input.onkeydown = function(e) {
                     if (e.key === "Enter") {
+                        if (input.value === ""){
+                            return;
+                        }
                         websocket.send(input.value);
                         input.value = "";
                     }
