@@ -7,7 +7,7 @@
     <body>
         <h1>해맞이 아동센터</h1>
 
-        <input id="username" style="display:block; width:800px;height:70px; box-sizing: border-box;font-size: 20px;" type="text" placeholder="닉네임">
+        <input id="username" style="display:block; width:800px;height:70px; box-sizing: border-box;font-size: 20px;" type="text" placeholder="닉네임을 입력하세요.">
         <button id="join-chat" style="width: 800px;height: 70px;font-size: 50px;" type="button">채팅방 입장하기</button>
         <textarea id="chat" style="display:block; width:800px; height:300px; box-sizing: border-box;font-size: 18px;" cols="30" rows="10" readonly></textarea>
         <input id="input" style="display:block; width:800px;height:100px; box-sizing: border-box;font-size: 25px;" type="text" placeholder="채팅하기" disabled>
@@ -29,6 +29,7 @@
 
                     input.disabled = false;
                     username.disabled = true;
+                    input.focus();
                 }
         
                 const btn = this;
