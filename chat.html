@@ -17,6 +17,16 @@
             const join_btn = document.querySelector("#join-chat");
             const textarea = document.querySelector("#chat");
             const input = document.querySelector("#input");
+
+            function preventDefaultEvent(e) {
+                e.preventDefault();
+            }
+
+            textarea.addEventListener("selectstart", preventDefaultEvent); // 텍스트 선택 방지
+            textarea.addEventListener("mousedown", preventDefaultEvent);   // 드래그 방지 (PC)
+            textarea.addEventListener("dragstart", preventDefaultEvent);   // 드래그 방지
+            textarea.addEventListener("touchstart", preventDefaultEvent);  // 드래그 방지 (모바일)
+            textarea.addEventListener("touchmove", preventDefaultEvent);   // 드래그 방지 (모바일)
         
             join_btn.addEventListener("click", function(e) {
                 this.disabled = true;
