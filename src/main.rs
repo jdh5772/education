@@ -55,7 +55,7 @@ async fn websocket(stream: WebSocket, state: Arc<AppState>) {
             } else {
                 let _ = sender
                     .send(Message::Text(String::from(
-                        "누군가 같은 닉네임 사용 중 !!!",
+                        "누군가 같은 닉네임 사용 중 !!! 새고로침 하세요.",
                     )))
                     .await;
 
