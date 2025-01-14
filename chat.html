@@ -1,80 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>WebSocket Chat</title>
-    </head>
-    <body>
-        <h1>해맞이 아동센터</h1>
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Chat</title>
+</head>
+<body>
+    <h1>해맞이 아동센터</h1>
 
-        <input id="username" style="display:block; width:800px;height:70px; box-sizing: border-box;font-size: 20px;" type="text" placeholder="닉네임을 입력하세요.">
-        <button id="join-chat" style="width: 800px;height: 70px;font-size: 50px;" type="button">채팅방 입장하기</button>
-        <textarea id="chat" style="display:block; width:800px; height:300px; box-sizing: border-box;font-size: 18px;" cols="30" rows="10" readonly></textarea>
-        <input id="input" style="display:block; width:800px;height:100px; box-sizing: border-box;font-size: 25px;" type="text" placeholder="채팅하기" disabled>
+    <input id="username" style="display:block; width:800px; height:70px; box-sizing: border-box; font-size:20px;" type="text" placeholder="닉네임을 입력하세요.">
+    <button id="join-chat" style="width:800px; height:70px; font-size:50px;" type="button">채팅방 입장하기</button>
+    <textarea id="chat" style="display:block; width:800px; height:300px; box-sizing: border-box; font-size:18px; resize: both;" cols="30" rows="10" readonly></textarea>
+    <textarea id="input" style="display:block; width:800px; height:100px; box-sizing: border-box; font-size:25px;" placeholder="채팅하기" disabled></textarea>
 
-        <script>
-            const username = document.querySelector("#username");
-            const join_btn = document.querySelector("#join-chat");
-            const textarea = document.querySelector("#chat");
-            const input = document.querySelector("#input");
+    <script>
+        const username = document.querySelector("#username");
+        const join_btn = document.querySelector("#join-chat");
+        const textarea = document.querySelector("#chat");
+        const input = document.querySelector("#input");
 
-            function preventDefaultEvent(e) {
-                e.preventDefault();
+        function preventDefaultEvent(e) {
+    // 크기 조절 핸들러는 건드리지 않음
+    if (e.target === textarea && e.target === document.activeElement) {
+        return;  // 크기 조절 허용
+    }
+    e.preventDefault();
+}
+
+// 텍스트 선택 및 드래그만 방지 (크기 조절 허용)
+textarea.addEventListener("selectstart", preventDefaultEvent);
+textarea.addEventListener("dragstart", preventDefaultEvent);
+textarea.addEventListener("touchstart", preventDefaultEvent);
+textarea.addEventListener("touchmove", preventDefaultEvent);
+        join_btn.addEventListener("click", function(e) {
+            this.disabled = true;
+
+            const websocket = new WebSocket("ws://0.0.0.0:3000/websocket");
+
+            websocket.onopen = function() {
+                console.log("connection opened");
+                websocket.send(username.value);
+
+                input.disabled = false;
+                username.disabled = true;
+                input.focus();
             }
 
-            textarea.addEventListener("selectstart", preventDefaultEvent); // 텍스트 선택 방지
-            textarea.addEventListener("mousedown", preventDefaultEvent);   // 드래그 방지 (PC)
-            textarea.addEventListener("dragstart", preventDefaultEvent);   // 드래그 방지
-            textarea.addEventListener("touchstart", preventDefaultEvent);  // 드래그 방지 (모바일)
-            textarea.addEventListener("touchmove", preventDefaultEvent);   // 드래그 방지 (모바일)
-        
-            join_btn.addEventListener("click", function(e) {
-                this.disabled = true;
-        
-                const websocket = new WebSocket("ws://0.0.0.0:3000/websocket");
-        
-                websocket.onopen = function() {
-                    console.log("connection opened");
-                    websocket.send(username.value);
+            const btn = this;
 
-                    input.disabled = false;
-                    username.disabled = true;
-                    input.focus();
-                }
-        
-                const btn = this;
-        
-                websocket.onclose = function() {
-                    console.log("connection closed");
-                    btn.disabled = false;
+            websocket.onclose = function() {
+                console.log("connection closed");
+                btn.disabled = false;
+                input.disabled = true;
+            }
 
-                    input.disabled = true;
-                }
-        
-                websocket.onmessage = function(e) {
-                    console.log("received message: " + e.data);
-        
-                    textarea.value += e.data + "\r\n";
-        
-                    textarea.scrollTop = textarea.scrollHeight;
-                }
-        
-                input.onkeydown = function(e) {
-                    if (e.key === "Enter") {
-                        if (input.value === ""){
+            websocket.onmessage = function(e) {
+                console.log("received message: " + e.data);
+
+                // 수신 메시지 출력 (첫 줄 비우기)
+                textarea.value += "\r\n" + e.data + "\r\n";
+
+                textarea.scrollTop = textarea.scrollHeight;
+            }
+
+            // Shift + Enter: 줄바꿈, Enter: 전송
+            input.onkeydown = function(e) {
+                if (e.key === "Enter") {
+                    if (e.shiftKey) {
+                        // Shift + Enter: 줄바꿈 허용
+                        return;
+                    } else {
+                        // Enter: 메시지 전송
+                        e.preventDefault();  // Enter의 기본 동작(줄바꿈) 방지
+                        if (input.value.trim() === "") {
                             return;
                         }
-                        websocket.send(input.value);
+
+                        // 첫 줄 비우고 메시지 전송
+                        websocket.send("\n" + input.value);
+
                         input.value = "";
 
                         input.disabled = true;
-                        setTimeout(()=>{
+                        setTimeout(() => {
                             input.disabled = false;
                             input.focus();
-                        },300);
+                        }, 300);
                     }
                 }
-            });
-        </script>
-    </body>
+            }
+        });
+    </script>
+</body>
 </html>
