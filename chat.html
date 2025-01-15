@@ -18,19 +18,29 @@
         const textarea = document.querySelector("#chat");
         const input = document.querySelector("#input");
 
-        function preventDefaultEvent(e) {
-    // 크기 조절 핸들러는 건드리지 않음
-    if (e.target === textarea && e.target === document.activeElement) {
-        return;  // 크기 조절 허용
-    }
-    e.preventDefault();
-}
+        // 드래그 방지 (크기 조절 허용)
+        textarea.addEventListener("mousedown", function(e) {
+            const offsetX = e.offsetX;
+            const offsetY = e.offsetY;
+            const width = textarea.offsetWidth;
+            const height = textarea.offsetHeight;
 
-// 텍스트 선택 및 드래그만 방지 (크기 조절 허용)
-textarea.addEventListener("selectstart", preventDefaultEvent);
-textarea.addEventListener("dragstart", preventDefaultEvent);
-textarea.addEventListener("touchstart", preventDefaultEvent);
-textarea.addEventListener("touchmove", preventDefaultEvent);
+            // 오른쪽 아래 모서리 16px 안쪽은 크기 조절 핸들
+            const resizeHandleSize = 16;
+
+            const isResizeHandle =
+                offsetX >= width - resizeHandleSize && offsetY >= height - resizeHandleSize;
+
+            if (!isResizeHandle) {
+                e.preventDefault();  // 크기 조절이 아닌 부분은 드래그 방지
+            }
+        });
+
+        // 텍스트 선택 방지
+        textarea.addEventListener("selectstart", function(e) {
+            e.preventDefault();
+        });
+
         join_btn.addEventListener("click", function(e) {
             this.disabled = true;
 
@@ -66,16 +76,14 @@ textarea.addEventListener("touchmove", preventDefaultEvent);
             input.onkeydown = function(e) {
                 if (e.key === "Enter") {
                     if (e.shiftKey) {
-                        // Shift + Enter: 줄바꿈 허용
-                        return;
+                        return;  // Shift + Enter는 줄바꿈 허용
                     } else {
-                        // Enter: 메시지 전송
                         e.preventDefault();  // Enter의 기본 동작(줄바꿈) 방지
                         if (input.value.trim() === "") {
                             return;
                         }
 
-                        // 첫 줄 비우고 메시지 전송
+                        // 메시지 전송
                         websocket.send("\n" + input.value);
 
                         input.value = "";
