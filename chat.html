@@ -7,7 +7,7 @@
 <body>
     <h1>해맞이 아동센터</h1>
 
-    <input id="username" style="display:block; width:800px; height:70px; box-sizing: border-box; font-size:20px;" type="text" placeholder="닉네임을 입력하세요.">
+    <input id="username" style="display:block; width:800px; height:70px; box-sizing: border-box; font-size:20px" type="text" placeholder="닉네임을 입력하세요." maxlength="20">
     <button id="join-chat" style="width:800px; height:70px; font-size:50px;" type="button">채팅방 입장하기</button>
     <textarea id="chat" style="display:block; width:800px; height:300px; box-sizing: border-box; font-size:18px; resize: both;" cols="30" rows="10" readonly></textarea>
     <textarea id="input" style="display:block; width:800px; height:100px; box-sizing: border-box; font-size:25px;" placeholder="채팅하기" disabled></textarea>
@@ -47,7 +47,6 @@
             const websocket = new WebSocket("ws://0.0.0.0:3000/websocket");
 
             websocket.onopen = function() {
-                console.log("connection opened");
                 websocket.send(username.value);
 
                 input.disabled = false;
@@ -58,13 +57,11 @@
             const btn = this;
 
             websocket.onclose = function() {
-                console.log("connection closed");
                 btn.disabled = false;
                 input.disabled = true;
             }
 
             websocket.onmessage = function(e) {
-                console.log("received message: " + e.data);
 
                 // 수신 메시지 출력 (첫 줄 비우기)
                 textarea.value += "\r\n" + e.data + "\r\n";
