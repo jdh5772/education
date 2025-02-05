@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>WebSocket Chat</title>
+    <style>
+        #chat {
+            resize: none; /* 기본적으로 크기 조절 비활성화 */
+        }
+    </style>
 </head>
 <body>
     <h1>해맞이 아동센터</h1>
 
     <input id="username" style="display:block; width:800px; height:70px; box-sizing: border-box; font-size:20px" type="text" placeholder="닉네임을 입력하세요." maxlength="20">
     <button id="join-chat" style="width:800px; height:70px; font-size:50px;" type="button">채팅방 입장하기</button>
-    <textarea id="chat" style="display:block; width:800px; height:300px; box-sizing: border-box; font-size:18px; resize: both;" cols="30" rows="10" readonly></textarea>
+    <textarea id="chat" style="display:block; width:800px; height:300px; box-sizing: border-box; font-size:18px;" cols="30" rows="10" readonly></textarea>
     <textarea id="input" style="display:block; width:800px; height:100px; box-sizing: border-box; font-size:25px;" placeholder="채팅하기" disabled></textarea>
 
     <script>
@@ -17,34 +22,26 @@
         const join_btn = document.querySelector("#join-chat");
         const textarea = document.querySelector("#chat");
         const input = document.querySelector("#input");
+        let resize_enabled = false;
 
-        // 드래그 방지 (크기 조절 허용)
+        // 드래그 방지 (크기 조절 허용 여부 체크)
         textarea.addEventListener("mousedown", function(e) {
-            const offsetX = e.offsetX;
-            const offsetY = e.offsetY;
-            const width = textarea.offsetWidth;
-            const height = textarea.offsetHeight;
-
-            // 오른쪽 아래 모서리 16px 안쪽은 크기 조절 핸들
-            const resizeHandleSize = 16;
-
-            const isResizeHandle =
-                offsetX >= width - resizeHandleSize && offsetY >= height - resizeHandleSize;
-
-            if (!isResizeHandle) {
-                e.preventDefault();  // 크기 조절이 아닌 부분은 드래그 방지
+            if (!resize_enabled) {
+                e.preventDefault();
             }
         });
 
         // 텍스트 선택 방지
         textarea.addEventListener("selectstart", function(e) {
-            e.preventDefault();
+            if (!resize_enabled) {
+                e.preventDefault();
+            }
         });
 
         join_btn.addEventListener("click", function(e) {
             this.disabled = true;
 
-            const websocket = new WebSocket("ws://0.0.0.0:3000/websocket");
+            const websocket = new WebSocket("ws://192.168.55.179:3000/websocket");
 
             websocket.onopen = function() {
                 websocket.send(username.value);
@@ -62,10 +59,7 @@
             }
 
             websocket.onmessage = function(e) {
-
-                // 수신 메시지 출력 (첫 줄 비우기)
                 textarea.value += "\r\n" + e.data + "\r\n";
-
                 textarea.scrollTop = textarea.scrollHeight;
             }
 
@@ -73,18 +67,22 @@
             input.onkeydown = function(e) {
                 if (e.key === "Enter") {
                     if (e.shiftKey) {
-                        return;  // Shift + Enter는 줄바꿈 허용
+                        return;
                     } else {
-                        e.preventDefault();  // Enter의 기본 동작(줄바꿈) 방지
+                        e.preventDefault();
                         if (input.value.trim() === "") {
                             return;
                         }
 
-                        // 메시지 전송
-                        websocket.send("\n" + input.value);
+                        if (input.value.trim() === "/resize") {
+                            resize_enabled = !resize_enabled;
+                            textarea.style.resize = resize_enabled ? "both" : "none";
+                            textarea.style.border = resize_enabled ? "2px solid red" : "";
+                        } else {
+                            websocket.send("\n" + input.value);
+                        }
 
                         input.value = "";
-
                         input.disabled = true;
                         setTimeout(() => {
                             input.disabled = false;

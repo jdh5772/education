@@ -68,7 +68,7 @@ async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr) {
 
     if is_contained {
         let _ = sender
-            .send(Message::Text(String::from("이미 접속중입니다!!")).into())
+            .send(Message::Text(String::from("이미 접속중입니다!!")))
             .await;
         return;
     }
@@ -82,12 +82,9 @@ async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr) {
                 break;
             } else {
                 let _ = sender
-                    .send(
-                        Message::Text(String::from(
-                            "누군가 같은 닉네임 사용 중 !!! 새고로침 하세요.",
-                        ))
-                        .into(),
-                    )
+                    .send(Message::Text(String::from(
+                        "누군가 같은 닉네임 사용 중 !!! 새고로침 하세요.",
+                    )))
                     .await;
 
                 return;
@@ -102,7 +99,7 @@ async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr) {
 
     let mut send_task = tokio::spawn(async move {
         while let Ok(msg) = rx.recv().await {
-            if sender.send(Message::Text(msg).into()).await.is_err() {
+            if sender.send(Message::Text(msg)).await.is_err() {
                 break;
             }
         }
