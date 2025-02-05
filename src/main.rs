@@ -3,7 +3,6 @@ use axum::{
         ws::{Message, WebSocket, WebSocketUpgrade},
         ConnectInfo, State,
     },
-    http::StatusCode,
     response::{Html, IntoResponse},
     routing::get,
     Router,
@@ -52,8 +51,8 @@ async fn websocket_handler(
     ws: WebSocketUpgrade,
     ConnectInfo(addr): ConnectInfo<SocketAddr>,
     State(state): State<Arc<AppState>>,
-) -> Result<impl IntoResponse, StatusCode> {
-    Ok(ws.on_upgrade(move |socket| websocket(socket, state, addr)))
+) -> impl IntoResponse {
+    ws.on_upgrade(move |socket| websocket(socket, state, addr))
 }
 
 async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr) {
