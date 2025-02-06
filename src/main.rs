@@ -18,7 +18,7 @@ use tokio::sync::broadcast;
 struct AppState {
     user_set: Mutex<HashSet<String>>,
     tx: broadcast::Sender<String>,
-    ip_map: Mutex<HashMap<String, String>>,
+    ip_map: Mutex<HashMap<String, bool>>,
 }
 
 #[tokio::main]
@@ -59,12 +59,11 @@ async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr) {
     let addr = addr.to_string();
     let mut vec = addr.split(":");
     let ip = vec.next().unwrap();
-    let port = vec.next().unwrap();
     let mut is_contained = false;
 
-    check_ip(&state, ip, port, &mut is_contained).await;
-
     let (mut sender, mut receiver) = stream.split();
+
+    check_ip(&state, ip, &mut is_contained).await;
 
     if is_contained {
         let _ = sender
@@ -115,8 +114,15 @@ async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr) {
     });
 
     tokio::select! {
-        _ = &mut send_task => recv_task.abort(),
-        _ = &mut recv_task => send_task.abort(),
+        _ = &mut send_task => {
+            recv_task.abort();
+            remove_ip(&state, ip).await;
+        },
+        _ = &mut recv_task => {
+            send_task.abort();
+            remove_ip(&state, ip).await;
+        },
+
     };
 
     let msg = format!("{username} left.");
@@ -140,11 +146,16 @@ async fn index() -> Html<&'static str> {
     Html(std::include_str!("../chat.html"))
 }
 
-async fn check_ip(state: &AppState, ip: &str, port: &str, is_contained: &mut bool) {
-    let mut state = state.ip_map.lock().unwrap();
-    if state.contains_key(ip) {
+async fn check_ip(state: &AppState, ip: &str, is_contained: &mut bool) {
+    let mut ip_map = state.ip_map.lock().unwrap();
+    if ip_map.contains_key(ip) {
         *is_contained = true;
     } else {
-        state.insert(ip.to_string(), port.to_string());
+        ip_map.insert(ip.to_string(), true);
     }
+}
+
+async fn remove_ip(state: &AppState, ip: &str) {
+    let mut ip_map = state.ip_map.lock().unwrap();
+    ip_map.remove(ip);
 }
