@@ -77,6 +77,11 @@ async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr) {
         if let Message::Text(name) = message {
             check_username(&state, &mut username, &name);
 
+            if username.trim().is_empty() {
+                remove_ip(&state, ip).await;
+                return;
+            }
+
             if !username.is_empty() {
                 break;
             } else {
