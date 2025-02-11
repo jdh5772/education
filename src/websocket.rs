@@ -3,7 +3,7 @@ use std::{net::SocketAddr, sync::Arc};
 use axum::extract::ws::{Message, WebSocket};
 use futures::{SinkExt, StreamExt};
 
-use crate::state::AppState;
+use crate::{disconnect::DisconnectGuard, state::AppState};
 
 pub async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr) {
     let addr = addr.to_string();
@@ -21,6 +21,8 @@ pub async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr
             .await;
         return;
     }
+
+    let _disconnect_guard = DisconnectGuard::new(ip.to_string(), state.clone());
 
     let mut username = String::new();
     while let Some(Ok(message)) = receiver.next().await {
@@ -88,5 +90,4 @@ pub async fn websocket(stream: WebSocket, state: Arc<AppState>, addr: SocketAddr
     let _ = state.tx.send(msg);
 
     state.user_set.lock().await.remove(&username);
-    state.ip_map.lock().await.remove(ip);
 }
